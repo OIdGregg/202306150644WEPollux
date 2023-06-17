@@ -129,45 +129,6 @@ def hash_password(password):
 def verify_password(password, password_hash):
     return bcrypt.verify(password, password_hash)
 
-def initialize_database():
-    connection = create_database_connection()
-    cursor = connection.cursor()
-    
-    # Removed the settings table creation, as the admin setup has been removed
-    # Added IF NOT EXISTS to all table creation statements
-
-    cursor.execute('''CREATE TABLE IF NOT EXISTS user_groups (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        );''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS permissions (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL
-        );''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(255) NOT NULL,
-            password_hash CHAR(60) NOT NULL,
-            user_group_id INT,
-            FOREIGN KEY (user_group_id) REFERENCES user_groups(id)
-        );''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS user_group_permissions (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_group_id INT NOT NULL,
-            permission_id INT NOT NULL,
-            FOREIGN KEY (user_group_id) REFERENCES user_groups(id),
-            FOREIGN KEY (permission_id) REFERENCES permissions(id)
-        );''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS materials (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            unit ENUM('kg', 'lb') NOT NULL,
-            category VARCHAR(255) NOT NULL
-        );''')
-    connection.commit()
-    cursor.close()
-    connection.close()
-
 def check_first_run():
     connection = create_database_connection()
     cursor = connection.cursor()
@@ -176,12 +137,6 @@ def check_first_run():
     cursor.close()
     connection.close()
     return (row_count == 0)
-
-def update_database(self, table_name, entry_id, field, new_value):
-    cursor = self.db.cursor()
-    update_query = f"UPDATE {table_name} SET {field} = %s WHERE id = %s"
-    cursor.execute(update_query, (new_value, entry_id))
-    self.db.commit()
 
 def is_password_complex(password):
     if len(password) < 8:
